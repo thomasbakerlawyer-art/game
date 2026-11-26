@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1114">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Dice</title>
+<style>
+:root{color-scheme:dark;--bg:#0f1114;--card:#171a1f;--deep:#121418;--line:#262b33;--txt:#eceef2;--dim:#8b93a1;--acc:#e5484d;--win:#3fb97a;--lose:#e5484d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:thin;scrollbar-color:#343a45 transparent}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#343a45;border-radius:8px}::-webkit-scrollbar-thumb:hover{background:#4a5260}::-webkit-scrollbar-corner{background:transparent}
+html,body{height:100%;margin:0;background:#07080a}
+body{display:flex;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--txt);-webkit-user-select:none;user-select:none;overscroll-behavior:none}
+.app{width:100%;max-width:440px;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.top{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 8px}
+.ttl{font-size:19px;font-weight:800;letter-spacing:.3px}
+.hdr{display:flex;align-items:center;gap:10px}
+.wlt{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.wlt svg,.prof svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.wlt svg{color:var(--dim)}
+.prof{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim)}
+.scroll{flex:1;overflow-y:auto;padding:4px 14px 12px;-webkit-overflow-scrolling:touch}
+.stage{border-radius:20px;background:var(--card);border:1px solid var(--line);padding:22px 18px 18px;transition:border-color .3s}
+.stage.win{border-color:rgba(63,185,122,.6)}
+.stage.lose{border-color:rgba(229,72,77,.6)}
+.dieRow{display:flex;justify-content:center;margin-bottom:26px}
+.die{position:relative;width:148px;height:148px;border-radius:30px;background:linear-gradient(160deg,#f6f2ea,#d9d3c6);box-shadow:inset 0 -6px 0 rgba(0,0,0,.12),0 8px 18px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;color:#16181c}
+.die b{font-size:40px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.die i{position:absolute;width:12px;height:12px;border-radius:50%;background:#16181c;opacity:.85}
+.die i:nth-of-type(1){left:16px;top:16px}.die i:nth-of-type(2){right:16px;top:16px}.die i:nth-of-type(3){left:16px;bottom:16px}.die i:nth-of-type(4){right:16px;bottom:16px}
+.die.roll{animation:tumble .5s linear infinite}
+@keyframes tumble{0%{transform:rotate(0)}25%{transform:rotate(-8deg) translateY(-4px)}50%{transform:rotate(6deg)}75%{transform:rotate(-5deg) translateY(-3px)}100%{transform:rotate(0)}}
+.stage.win .die b{color:#14804a}.stage.lose .die b{color:#c2282e}
+.tw{position:relative;padding-top:30px}
+.pin{position:absolute;top:0;left:50%;transform:translateX(-50%);transition:left .55s cubic-bezier(.3,.8,.3,1);opacity:0;pointer-events:none}
+.pin.on{opacity:1}
+.pin span{display:block;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:800;background:#eceef2;color:#16181c;font-variant-numeric:tabular-nums}
+.pin::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#eceef2;border-bottom:0}
+.pin.win span{background:var(--win);color:#06140c}.pin.win::after{border-top-color:var(--win)}
+.pin.lose span{background:var(--lose);color:#fff}.pin.lose::after{border-top-color:var(--lose)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:14px;border-radius:99px;outline:none;margin:0;display:block;background:#333}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:5px solid #20242b;box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:5px solid #20242b;cursor:pointer}
+input[type=range]::-moz-range-track{background:transparent}
+input[type=range]:disabled{opacity:.6}
+.tk{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--dim);font-weight:700;padding:0 2px}
+.hist{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 4px;min-height:50px}
+.chip{flex:none;padding:6px 12px;border-radius:99px;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;background:var(--card);border:1px solid var(--line);color:var(--lose)}
+.chip.w{color:var(--win)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:12px;background:var(--deep);border:1px solid var(--line);margin-top:6px}
+.seg button{border:0;border-radius:9px;padding:11px 0;font:inherit;font-size:14px;font-weight:700;color:var(--dim);background:transparent;cursor:pointer}
+.seg button.on{background:#2a2f38;color:var(--txt)}
+.seg button:disabled{opacity:.6}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.stats small{display:block;font-size:11px;color:var(--dim);font-weight:700;margin-bottom:3px;white-space:nowrap}
+.stats b{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lbl{font-size:12px;color:var(--dim);margin:14px 0 6px;font-weight:600}
+.field{display:flex;background:var(--deep);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.field:focus-within{border-color:#4a5260}
+.field span{display:flex;align-items:center;padding:0 0 0 14px;color:var(--dim);font-weight:800}
+.field input{flex:1;min-width:0;background:transparent;border:0;color:var(--txt);font:inherit;font-size:18px;font-weight:800;padding:13px 10px;outline:none;-webkit-user-select:text;user-select:text}
+.field button{border:0;border-left:1px solid var(--line);background:#1d2127;color:var(--txt);font:inherit;font-size:14px;font-weight:800;padding:0 16px;cursor:pointer}
+.field button:disabled,.field input:disabled{opacity:.5}
+.toast{min-height:18px;margin-top:8px;text-align:center;font-size:13px;color:var(--lose);font-weight:700}
+.dock{padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 12px);background:var(--bg);border-top:1px solid var(--line)}
+.rollb{width:100%;border:0;border-radius:14px;padding:16px;font:inherit;font-size:17px;font-weight:800;color:#fff;background:var(--acc);cursor:pointer}
+.rollb:active{background:#cc3a3f}
+.rollb:disabled{opacity:.5}
+
+.top{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 8px}
+.cb{width:40px;height:40px;border-radius:11px;background:var(--acc);color:#fff;font-weight:900;font-size:21px;display:flex;align-items:center;justify-content:center}
+.lv small{display:block;font-size:11px;color:var(--dim);font-weight:700;margin-bottom:6px}
+.lvbar{height:6px;border-radius:99px;background:#262b33;overflow:hidden}.lvbar i{display:block;height:100%;width:0;background:#8b93a1;transition:width .4s}
+.bt{text-align:right}.bt small{display:block;font-size:11px;color:var(--dim);font-weight:700}.bt b{font-size:20px;font-variant-numeric:tabular-nums}
+.recent{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2px 14px}
+.rr{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px;font-variant-numeric:tabular-nums}.rr:last-child{border:0}.rr span{color:var(--dim)}
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.tri div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}.tri small{display:block;font-size:11px;color:var(--dim);font-weight:700;margin-bottom:3px}.tri b{font-size:16px}
+
+#np{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:24px}
+#np div{width:100%;max-width:340px;background:#14161a;color:#fff;border:1px solid #2a2e35;border-radius:18px;padding:22px;font-family:inherit}
+#np h3{margin:0 0 14px;font-size:19px}
+#np input{width:100%;padding:13px;border-radius:12px;border:1px solid #2a2e35;background:#0c0d10;color:#fff;font:inherit;font-size:17px;outline:none;-webkit-user-select:text;user-select:text}
+#np button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:12px;background:#fff;color:#111;font:inherit;font-weight:800;font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div class="cb">C</div><div class="lv"><small id="lvl">Level 1</small><div class="lvbar"><i id="lvb"></i></div></div><div class="bt"><small>Balance</small><b id="bal">$100.00</b></div></div>
+  <div class="scroll">
+    <div class="stage" id="stage">
+      <div class="dieRow"><div class="die" id="die"><i></i><i></i><i></i><i></i><b id="num">50.00</b></div></div>
+      <div class="tw"><div class="pin" id="pin"><span id="pinv">0</span></div><input type="range" id="tg" min="1" max="99" step="0.01" value="50"></div>
+      <div class="tk"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+    </div>
+    <div class="hist" id="hist"></div>
+    <div class="seg" id="seg"><button type="button" data-m="over" class="on">Roll over</button><button type="button" data-m="under">Roll under</button></div>
+    <div class="stats">
+      <div><small>Multiplier</small><b id="mult">1.98x</b></div>
+      <div><small id="tlab">Roll over</small><b id="tval">50.00</b></div>
+      <div><small>Win chance</small><b id="chance">49.99%</b></div>
+    </div>
+    <div class="lbl">Bet amount</div>
+    <div class="field"><span>$</span><input id="bet" type="number" inputmode="decimal" min="1" step="1" value="10"><button id="half" type="button">1/2</button><button id="dbl" type="button">2x</button></div>
+    <div class="toast" id="toast"></div>
+    <div class="lbl">Recent rolls</div><div class="recent" id="recent"></div>
+    <div class="tri"><div><small>Wins</small><b id="sw">0</b></div><div><small>Losses</small><b id="sl">0</b></div><div><small>Profit</small><b id="sp">$0.00</b></div></div>
+  </div>
+  <div class="dock"><button class="rollb" id="roll" type="button">Roll dice</button></div>
+</div>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)},KEY='dice_demo_v1',busy=false,bc=null;
+  try{bc=new BroadcastChannel(KEY)}catch(e){}
+  var U=(function(){try{return localStorage.getItem('player_name')||''}catch(e){return''}})();
+  function askName(force){
+    if(document.getElementById('np'))return;
+    var o=document.createElement('div');o.id='np';
+    o.innerHTML='<div><h3>Enter your name</h3><input id="npi" type="text" maxlength="20" autocomplete="off" placeholder="Your name"><button type="button" id="npb">Continue</button></div>';
+    document.body.appendChild(o);
+    var i=document.getElementById('npi');if(force&&U)i.value=U;
+    function ok(){var v=i.value.replace(/^\s+|\s+$/g,'').slice(0,20);if(!v){i.focus();return}U=v;try{localStorage.setItem('player_name',v)}catch(e){}o.remove();pub()}
+    document.getElementById('npb').addEventListener('click',ok);
+    i.addEventListener('keydown',function(e){if(e.key==='Enter')ok()});
+    setTimeout(function(){i.focus()},50);
+  }
+  var S={phase:'idle',balance:100,bet:10,mode:'over',target:50,chance:49.99,mult:1.98,next:0,cur:0,rolls:0,hist:[],bser:[],log:[],stats:{wagered:0,wins:0,losses:0,best:0,bestWin:0},start:100,ts:0};
+  try{var sb=parseFloat(localStorage.getItem(KEY+'_bal'));if(sb>=0)S.balance=sb}catch(e){}
+  S.start=S.balance;S.bser=[S.balance];
+  function fmt(n){return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function f2(n){return n.toFixed(2)}
+  function gen(){var a=new Uint32Array(1);crypto.getRandomValues(a);return (a[0]%10000)/100}
+  function lg(l,m){S.log.push({t:Date.now(),l:l,m:m});if(S.log.length>150)S.log.shift()}
+  function chanceOf(mode,t){var c=Math.round(t*100);return (mode==='over'?(9999-c):c)/100}
+  function multOf(ch){return ch>0?Math.floor(99/ch*10000)/10000:0}
+  var AC=null;
+  function tone(a,b,v){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();var t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(a,t);o.frequency.exponentialRampToValueAtTime(b,t+.14);g.gain.setValueAtTime(v||.04,t);g.gain.exponentialRampToValueAtTime(.0001,t+.16);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.18)}catch(e){}}
+  function pub(){
+    S.ts=Date.now();S.user=U||'Player';
+    try{localStorage.setItem(KEY+'_s',JSON.stringify(S))}catch(e){}
+    try{if(bc)bc.postMessage(S)}catch(e){}
+    if(location.protocol.indexOf('http')===0){try{fetch('/state/dice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(S),keepalive:true}).catch(function(){})}catch(e){}}
+  }
+  function zones(){
+    var t=S.target,w='#3fb97a',l='#e5484d';
+    $('tg').style.background=S.mode==='over'?'linear-gradient(90deg,'+l+' 0 '+t+'%,'+w+' '+t+'% 100%)':'linear-gradient(90deg,'+w+' 0 '+t+'%,'+l+' '+t+'% 100%)';
+  }
+  function calc(){
+    S.target=parseFloat($('tg').value)||50;S.chance=chanceOf(S.mode,S.target);S.mult=multOf(S.chance);
+    $('mult').textContent=f2(S.mult)+'x';$('tval').textContent=f2(S.target);$('tlab').textContent=S.mode==='over'?'Roll over':'Roll under';
+    $('chance').textContent=S.chance.toFixed(2)+'%';zones();
+  }
+  function chips(){var h=$('hist');h.innerHTML='';S.hist.slice(0,14).forEach(function(x){var c=document.createElement('div');c.className='chip'+(x.win?' w':'');c.textContent=f2(x.result);h.appendChild(c)})}
+  function recent(){
+    var r=$('recent'),h='';S.hist.slice(0,6).forEach(function(x){h+='<div class="rr"><b style="color:var(--'+(x.win?'win':'lose')+')">'+f2(x.result)+'</b><span>'+x.mode+' '+f2(x.target)+'</span><b style="color:var(--'+(x.win?'win':'lose')+')">'+(x.net>=0?'+':'-')+fmt(Math.abs(x.net))+'</b></div>'});
+    r.innerHTML=h||'<div class="rr"><span>No rolls yet</span></div>';
+    $('sw').textContent=S.stats.wins;$('sl').textContent=S.stats.losses;var p=S.balance-S.start;$('sp').textContent=(p>=0?'+':'-')+fmt(Math.abs(p));$('sp').style.color=p>0?'var(--win)':p<0?'var(--lose)':'';
+  }
+  function lvl(){var w=S.stats.wagered;$('lvl').textContent='Level '+(1+Math.floor(w/100));$('lvb').style.width=(w%100)+'%'}
+  function ui(){
+    $('bal').textContent=fmt(S.balance);
+    var out=S.balance<1&&!busy;$('roll').textContent=out?'Add $100':'Roll dice';$('roll').disabled=busy;
+    ['bet','tg','half','dbl'].forEach(function(i){$(i).disabled=busy});
+    [].forEach.call(document.querySelectorAll('#seg button'),function(b){b.disabled=busy;b.className=b.dataset.m===S.mode?'on':''});
+    chips();calc();recent();lvl();
+  }
+  function toast(m){$('toast').textContent=m;if(m)setTimeout(function(){if($('toast').textContent===m)$('toast').textContent=''},2600)}
+  function betv(){var v=parseFloat($('bet').value);return isFinite(v)?v:0}
+  function movePin(v,cls){var p=$('pin');p.className='pin on'+(cls?' '+cls:'');p.style.left=Math.max(4,Math.min(96,v))+'%';$('pinv').textContent=f2(v)}
+  async function roll(){
+    if(busy)return;
+    if(S.balance<1){S.balance=100;try{localStorage.setItem(KEY+'_bal',S.balance)}catch(e){}ui();pub();return}
+    var b=Math.round(betv()*100)/100;
+    if(!(b>=1)){toast('Enter a bet of at least $1');return}
+    if(b>S.balance){toast('Not enough balance');return}
+    calc();
+    busy=true;S.balance-=b;S.rolls++;S.bet=b;S.stats.wagered+=b;S.phase='rolling';
+    var res=S.next,n=Math.round(res*100),t100=Math.round(S.target*100),mode=S.mode,mult=S.mult,tgt=S.target;
+    S.cur=res;
+    lg('info','roll '+S.rolls+', bet '+fmt(b)+', '+mode+' '+f2(tgt));
+    $('stage').className='stage';$('pin').className='pin';ui();pub();
+    var die=$('die');die.classList.add('roll');
+    for(var i=0;i<9;i++){$('num').textContent=f2(gen());tone(300+i*40,360+i*40,.02);await new Promise(function(r){setTimeout(r,70)})}
+    die.classList.remove('roll');$('num').textContent=f2(res);
+    var win=mode==='over'?n>t100:n<t100,pay=win?b*mult:0;
+    movePin(res,win?'win':'lose');
+    S.balance+=pay;S.bser.push(S.balance);if(S.bser.length>60)S.bser.shift();
+    if(res>S.stats.best)S.stats.best=res;
+    if(win){S.stats.wins++;if(pay-b>S.stats.bestWin)S.stats.bestWin=pay-b}else S.stats.losses++;
+    S.hist.unshift({n:S.rolls,bet:b,mode:mode,target:tgt,mult:mult,result:res,win:win,pay:pay,net:pay-b});if(S.hist.length>20)S.hist.pop();
+    lg('sys','result '+f2(res));lg(win?'ok':'bad',win?'win +'+fmt(pay-b):'loss -'+fmt(b));
+    S.next=gen();S.phase=win?'won':'lost';busy=false;
+    $('stage').className='stage '+(win?'win':'lose');
+    tone(win?520:300,win?880:160,.05);
+    try{localStorage.setItem(KEY+'_bal',S.balance)}catch(e){}
+    ui();pub();
+  }
+  $('roll').addEventListener('click',roll);
+  $('tg').addEventListener('input',calc);
+  $('seg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b||busy)return;S.mode=b.dataset.m;ui();pub()});
+  $('half').addEventListener('click',function(){$('bet').value=Math.max(1,Math.floor(betv()/2))});
+  $('dbl').addEventListener('click',function(){$('bet').value=Math.max(1,Math.min(Math.floor(S.balance),Math.floor(betv()*2)))});
+  S.next=gen();ui();pub();
+(function(){var b=document.getElementById('bal');if(!b)return;var p=b.parentElement;p.style.cursor='pointer';p.addEventListener('click',function(){if(busy)return;var v=prompt('Set your balance',(S.balance).toFixed(2));if(v===null)return;v=parseFloat(String(v).replace(/[^0-9.]/g,''));if(!isFinite(v)||v<0)return;v=Math.round(v*100)/100;S.balance=v;S.start=v;S.bser=[v];try{localStorage.setItem(KEY+'_bal',v)}catch(e){}ui();pub();});})();/*setBalTap*/
+  if(!U)askName();
+})();
+</script>
+</body>
+</html>
